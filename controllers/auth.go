@@ -9,33 +9,35 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func UsersEndPoint(router *gin.RouterGroup) {
-	route := router.Group("/users")
-	route.POST("/register", register)
+func AuthEndPoint(router *gin.RouterGroup) {
+	router.POST("/auth", Login)
 }
 
-func register(ctx *gin.Context) {
-	var req = &models.Users{}
+func Login(ctx *gin.Context) {
+	var req = &models.Auth{}
 	err := ctx.BindJSON(&req)
 	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, err)
+		return
+	}
+	hashPassword, err := v1.QueryPasswordByUsername(req)
+	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, utils.ErrorMessage(utils.ErrorObject{
-			Title:        "Bind Request is Error",
+			Title:        "Query Password By Username Error",
 			ErrorMessage: err.Error(),
 		}))
 		return
 	}
-	response, err := v1.RegisterUser(req)
-	if err != nil {
+	hashStatus := utils.CheckPasswordHash(req.Password, hashPassword.Password)
+	if !hashStatus {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, utils.ErrorMessage(utils.ErrorObject{
-			Title:        "Register User Error",
-			ErrorMessage: err.Error(),
+			Title:        "Login is success",
+			ErrorMessage: "password is incorrect",
 		}))
 		return
 	}
 
 	ctx.JSON(http.StatusOK, utils.SuccessMessage(utils.DataObject{
-		Title: "Register success",
-		Item:  response,
+		Title: "Login is success",
 	}))
-
 }

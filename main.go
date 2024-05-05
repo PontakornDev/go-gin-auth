@@ -29,7 +29,7 @@ func main() {
 	if *migrate {
 		repositories.MigrationDB()
 	}
-	fmt.Printf("Server Listen PORT -> %s\n", os.Getenv("PORT"))
+	fmt.Printf("Server Listen PORT : %s\n", os.Getenv("PORT"))
 
 	if err := route.Run(":" + os.Getenv("PORT")); err != nil {
 		fmt.Println(err)

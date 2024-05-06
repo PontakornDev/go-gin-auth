@@ -3,6 +3,7 @@ package controllers
 import (
 	"net/http"
 
+	"github.com/PontakornDev/ginAuth/middleware"
 	"github.com/PontakornDev/ginAuth/models"
 	v1 "github.com/PontakornDev/ginAuth/repositories/v1"
 	"github.com/PontakornDev/ginAuth/utils"
@@ -20,7 +21,7 @@ func Login(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, err)
 		return
 	}
-	hashPassword, err := v1.QueryPasswordByUsername(req)
+	users, err := v1.QueryPasswordByUsername(req)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, utils.ErrorMessage(utils.ErrorObject{
 			Title:        "Query Password By Username Error",
@@ -28,16 +29,28 @@ func Login(ctx *gin.Context) {
 		}))
 		return
 	}
-	hashStatus := utils.CheckPasswordHash(req.Password, hashPassword.Password)
+	hashStatus := utils.CheckPasswordHash(req.Password, users.Password)
 	if !hashStatus {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, utils.ErrorMessage(utils.ErrorObject{
-			Title:        "Login is success",
+			Title:        "Login is fail",
 			ErrorMessage: "password is incorrect",
+		}))
+		return
+	}
+
+	token, err := middleware.GenerateToken(users)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, utils.ErrorMessage(utils.ErrorObject{
+			Title:        "generate token is fail",
+			ErrorMessage: err.Error(),
 		}))
 		return
 	}
 
 	ctx.JSON(http.StatusOK, utils.SuccessMessage(utils.DataObject{
 		Title: "Login is success",
+		Item: &models.Token{
+			Token: token,
+		},
 	}))
 }

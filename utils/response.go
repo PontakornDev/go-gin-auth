@@ -16,7 +16,7 @@ type DataObject struct {
 
 type ErrorObject struct {
 	Title        string `json:"title,omitempty"`
-	ErrorMessage string `json:"description,omitempty"`
+	ErrorMessage string `json:"errorMessage,omitempty"`
 }
 
 func SuccessMessage(data DataObject) MessagePrototype {

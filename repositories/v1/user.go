@@ -25,3 +25,11 @@ func QueryPasswordByUsername(r *models.Auth) (*models.Users, error) {
 	}
 	return &users, nil
 }
+
+func GetAllUser() (*[]models.Users, error) {
+	users := []models.Users{}
+	if err := repositories.DB.Find(&users).Error; err != nil {
+		return nil, err
+	}
+	return &users, nil
+}
